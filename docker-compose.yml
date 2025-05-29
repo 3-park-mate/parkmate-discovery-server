@@ -1,0 +1,15 @@
+services:
+  gateway:
+    container_name: eureka_service
+    image: ${DOCKER_USERNAME}/eureka:latest
+    ports:
+      - "8761:8761"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - backend
+
+networks:
+  backend:
+    external: true

@@ -1,0 +1,79 @@
+name: Deploy Eureka from Docker Hub to EC2
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Build Spring Boot App
+        run: ./gradlew clean build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Create .env file
+        run: |
+          echo "SPRING_PROFILES_ACTIVE=prod" > .env
+          echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env
+
+      - name: Build and Push Docker Image to Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/eureka:latest
+
+      - name: Save PEM file
+        run: |
+          echo "${{ secrets.EC2_PEM_KEY }}" > eureka-key.pem
+          chmod 400 eureka-key.pem
+
+      - name: Create target directory on EC2
+        run: |
+          ssh -i eureka-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+          "mkdir -p /home/${{ secrets.EC2_USER }}/eureka"
+
+      - name: Copy files to EC2
+        run: |
+          # Replace env vars in compose file
+          sed "s|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g" docker-compose.yml > docker-compose.remote.yml
+          
+          scp -i eureka-key.pem -o StrictHostKeyChecking=no \
+            docker-compose.remote.yml \
+            .env \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/eureka/
+
+      - name: Remote Docker Compose Pull & Up
+        run: |
+          ssh -i eureka-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd ~/eureka
+            docker compose pull
+            docker compose up -d
+          EOF
+
+      - name: Clean up local PEM file
+        run: rm -f gateway-key.pem
