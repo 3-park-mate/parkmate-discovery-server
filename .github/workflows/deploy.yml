@@ -72,7 +72,7 @@ jobs:
           ssh -i eureka-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd ~/eureka
             docker compose pull
-            docker compose -f docker-compose.remote.yml  up -d
+            docker-compose -f docker-compose.remote.yml up -d
           EOF
 
       - name: Clean up local PEM file
