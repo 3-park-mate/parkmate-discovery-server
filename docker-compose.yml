@@ -6,7 +6,6 @@ services:
       - "8761:8761"
     env_file:
       - .env
-    restart: unless-stopped
     networks:
       - backend
 
