@@ -38,6 +38,7 @@ jobs:
         run: |
           echo "SPRING_PROFILES_ACTIVE=prod" > .env
           echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env
+          echo "EUREKA_HOST=${{ secrets.EUREKA_HOST }}" >> .env
 
       - name: Build and Push Docker Image to Docker Hub
         uses: docker/build-push-action@v5
@@ -76,4 +77,4 @@ jobs:
           EOF
 
       - name: Clean up local PEM file
-        run: rm -f gateway-key.pem
+        run: rm -f eureka-key.pem

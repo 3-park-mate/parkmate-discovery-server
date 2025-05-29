@@ -1,5 +1,5 @@
 services:
-  gateway:
+  eureka:
     container_name: eureka_service
     image: ${DOCKER_USERNAME}/eureka:latest
     ports:
