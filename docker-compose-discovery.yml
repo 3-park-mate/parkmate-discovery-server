@@ -3,7 +3,7 @@ version: '3.8'
 services:
   gateway:
     container_name: discovery_service
-    image: 090188239653.dkr.ecr.ap-northeast-2.amazonaws.com/gateway-service:latest
+    image: 090188239653.dkr.ecr.ap-northeast-2.amazonaws.com/discovery-service
     ports:
       - "8761:8761"
     env_file:
