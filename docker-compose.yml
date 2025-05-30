@@ -1,7 +1,9 @@
+version: '3.8'
+
 services:
-  eureka:
-    container_name: eureka_service
-    image: ${DOCKER_USERNAME}/eureka:latest
+  gateway:
+    container_name: discovery_service
+    image: 090188239653.dkr.ecr.ap-northeast-2.amazonaws.com/gateway-service:latest
     ports:
       - "8761:8761"
     env_file:
