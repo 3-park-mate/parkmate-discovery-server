@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   discovery:
-    container_name: discovery_service
+    container_name: discovery-service
     image: 090188239653.dkr.ecr.ap-northeast-2.amazonaws.com/discovery-service
     ports:
       - "8761:8761"
